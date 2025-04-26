@@ -1,5 +1,4 @@
 #include <Adafruit_NeoPixel.h>
-#include <EEPROM.h>
 #include <LiquidCrystal.h>
 
 #include "music/morse.h"
@@ -201,6 +200,10 @@ class rgb_t {
 class dino_t {
    public:
     dino_t(LiquidCrystal& lcd, rgb_t& rgb) : lcd(lcd), rgb(rgb) {}
+    void play() {
+        lcd.clear();
+        while (playDino() < 12);
+    }
     int playDino() {
         // init
         dinoGround = true;
@@ -376,7 +379,7 @@ class SimonSays {
         lcd.print(level);
     }
     int level = 0;
-    static constexpr byte colors[8] = {RED, GREEN, BLUE, YELLOW, RED, GREEN, BLUE, YELLOW};
+    const byte colors[8] = {RED, GREEN, GREEN, YELLOW, BLUE, RED, YELLOW, GREEN};
     LiquidCrystal& lcd;
     rgb_t& rgb;
 };
@@ -402,7 +405,7 @@ class Morse {
             }
             byte sel = selector(const_cast<char*>(colorsChars));
             sound.stop();
-            if (sel == colors[level]) {
+            if (sel == words[level]) {
                 level++;
                 if (level >= 3) {
                     lcd.clear();
@@ -421,9 +424,47 @@ class Morse {
         lcd.print(level);
     }
     byte level = 0;
-    static constexpr byte colors[3] = {RED, GREEN, BLUE};
+    const byte words[3] = {GREEN, YELLOW, RED};
     LiquidCrystal& lcd;
     rgb_t& rgb;
+};
+
+class Dobble {
+   public:
+    Dobble(LiquidCrystal& lcd) : lcd(lcd) {};
+    void play() {
+        lcd.clear();
+        lcd.print(F("Dobble"));
+        while (true) {
+            showLevel();
+            byte sel = selector(const_cast<char*>(dobble[level]));
+            if (sel == answers[level]) {
+                level++;
+                if (level >= 4) {
+                    lcd.clear();
+                    break;
+                } else {
+                    level = 0;
+                }
+            }
+        }
+    }
+
+   private:
+    void showLevel() {
+        lcd.setCursor(0, 1);
+        lcd.print(F("Level:"));
+        lcd.print(level);
+    }
+
+    const char dobble[4][4] = {{DINO, CHERRY, APPLE, TREE},
+                               {HEAD, PEAR, BANANA, TWO},
+                               {PEAR, CHERRY, DINO, HEAD},
+                               {TWO, APPLE, TREE, BANANA}};
+    const char answers[4] = {1, 3, 0, 2};
+
+    int level = 0;
+    LiquidCrystal& lcd;
 };
 
 void customCharacterLoad(LiquidCrystal& lcd, const char* data, byte addr) {
@@ -438,6 +479,7 @@ rgb_t rgbLed(rgb);
 dino_t dinoGame(lcd, rgbLed);
 SimonSays simon(lcd, rgbLed);
 Morse morse(lcd, rgbLed);
+Dobble dobble(lcd);
 
 void setup() {
     pinMode(RANDOM_PIN, INPUT);
@@ -466,6 +508,13 @@ void setup() {
 
     Serial.begin(9600);
     Serial.println(F("Start"));
+
+    dobble.play();
+    dinoGame.play();
+    morse.play();
+    simon.play();
+    lcd.clear();
+    lcd.print(F("Defused"));
 }
 
 void loop() {
