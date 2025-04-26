@@ -403,6 +403,7 @@ class Morse {
                     sound.play(const_cast<uint16_t*>(morse3), sizeof(morse3), 1);
                     break;
             }
+            delay(2000);
             byte sel = selector(const_cast<char*>(colorsChars));
             sound.stop();
             if (sel == words[level]) {
@@ -437,6 +438,7 @@ class Dobble {
         lcd.print(F("Dobble"));
         while (true) {
             showLevel();
+            delay(2000);
             byte sel = selector(const_cast<char*>(dobble[level]));
             if (sel == answers[level]) {
                 level++;
