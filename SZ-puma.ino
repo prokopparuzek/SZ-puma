@@ -51,7 +51,8 @@ const char pear[8] PROGMEM = {0x00, 0x04, 0x04, 0x0E, 0x0E, 0x1F, 0x1F, 0x0E};
 const char banana[8] PROGMEM = {0x02, 0x04, 0x0C, 0x0C, 0x18, 0x1C, 0x0E, 0x06};
 const char* const fruitsChars[8] PROGMEM = {two, dino, tree, head, cherry, apple, pear, banana};
 
-const char colorsChars[4] PROGMEM = {'R', 'G', 'B', 'Y'};
+const char colorsChars[4] = {'R', 'G', 'B', 'Y'};
+const char simonColorsChars[4] = {'G', 'Y', 'R', 'B'};
 
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
 Adafruit_NeoPixel rgb(1, RGB_PIN, NEO_RGB + NEO_KHZ800);
@@ -137,11 +138,11 @@ int selector(char* things) {
     lcd.clear();
     lcd.print(F("Select: "));
     for (byte i = 0; i < 4; i++) {
-        lcd.setCursor(10 + 2 * i, 0);
+        lcd.setCursor(8 + 2 * i, 0);
         lcd.write(things[i]);
     }
     for (byte i = 0; i < 4; i++) {
-        lcd.setCursor(10 + 2 * i, 1);
+        lcd.setCursor(8 + 2 * i, 1);
         lcd.write(buttons[i]);
     }
     waitButton();
@@ -201,8 +202,10 @@ class dino_t {
    public:
     dino_t(LiquidCrystal& lcd, rgb_t& rgb) : lcd(lcd), rgb(rgb) {}
     void play() {
-        lcd.clear();
-        while (playDino() < 12);
+        while (true) {
+            playDino();
+            if (score > 12 && score % 3 == 0) break;
+        }
     }
     int playDino() {
         // init
@@ -311,8 +314,9 @@ class dino_t {
             maxScore = score;
         }
         dinoRun = false;
-        delay(1000);
-        waitButton();
+        delay(2000);
+        rgb.clear();
+        // waitButton();
     }
     bool button() {
         return getButton() != NO_BUTTON;
@@ -347,39 +351,52 @@ class SimonSays {
     void play() {
         lcd.clear();
         lcd.print(F("Simon says"));
+        delay(2000);
         while (true) {
             showLevel();
             showColors();
-            byte sel = selector(const_cast<char*>(colorsChars));
-            if (sel == colors[level]) {
+            if (correctSequence()) {
                 level++;
-                showColors();
-                if (level >= 8) {
+                if (level >= 5) {
                     lcd.clear();
                     break;
-                } else {
-                    level = 0;
                 }
+            } else {
+                level = 0;
             }
         }
     }
 
    private:
     void showColors() {
-        for (int i = 0; i < level; i++) {
+        for (int i = 0; i <= level; i++) {
             rgb.color(colors[i]);
             delay(1500);
             rgb.clear();
             delay(200);
         }
+        if (level == 0) delay(1000);
     }
     void showLevel() {
         lcd.setCursor(0, 1);
         lcd.print(F("Level:"));
         lcd.print(level);
     }
+    bool correctSequence() {
+        for (int i = 0; i <= level; i++) {
+            if (selector(const_cast<char*>(simonColorsChars)) != colors[i]) {
+                return false;
+            }
+            rgb.color(colors[i]);
+            delay(500);
+            rgb.clear();
+            delay(200);
+        }
+        return true;
+    }
     int level = 0;
-    const byte colors[8] = {RED, GREEN, GREEN, YELLOW, BLUE, RED, YELLOW, GREEN};
+    // const char simonColorsChars[4] = {'G', 'Y', 'R', 'B'};
+    const byte colors[5] = {RED, GREEN, GREEN, YELLOW, BLUE};
     LiquidCrystal& lcd;
     rgb_t& rgb;
 };
@@ -394,13 +411,13 @@ class Morse {
             showLevel();
             switch (level) {
                 case 0:
-                    sound.play(const_cast<uint16_t*>(morse1), sizeof(morse1), 1);
+                    sound.play(const_cast<uint16_t*>(morse1), sizeof(morse1), 0);
                     break;
                 case 1:
-                    sound.play(const_cast<uint16_t*>(morse2), sizeof(morse2), 1);
+                    sound.play(const_cast<uint16_t*>(morse2), sizeof(morse2), 0);
                     break;
                 case 2:
-                    sound.play(const_cast<uint16_t*>(morse3), sizeof(morse3), 1);
+                    sound.play(const_cast<uint16_t*>(morse3), sizeof(morse3), 0);
                     break;
             }
             delay(2000);
@@ -411,9 +428,9 @@ class Morse {
                 if (level >= 3) {
                     lcd.clear();
                     break;
-                } else {
-                    level = 0;
                 }
+            } else {
+                level = 0;
             }
         }
     }
@@ -445,9 +462,9 @@ class Dobble {
                 if (level >= 4) {
                     lcd.clear();
                     break;
-                } else {
-                    level = 0;
                 }
+            } else {
+                level = 0;
             }
         }
     }
@@ -508,8 +525,8 @@ void setup() {
     rgb.clear();
     rgb.show();
 
-    Serial.begin(9600);
-    Serial.println(F("Start"));
+    // Serial.begin(9600);
+    // Serial.println(F("Start"));
 
     dobble.play();
     dinoGame.play();
