@@ -204,7 +204,7 @@ class dino_t {
     void play() {
         while (true) {
             playDino();
-            if (score > 12 && score % 3 == 0) break;
+            if (score >= 12 && score % 3 == 0) break;
         }
     }
     int playDino() {
