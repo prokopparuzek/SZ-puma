@@ -442,7 +442,7 @@ class Morse {
         lcd.print(level);
     }
     byte level = 0;
-    const byte words[3] = {1, 3, 0};
+    const byte words[3] = {3, 1, 2};
     LiquidCrystal& lcd;
     rgb_t& rgb;
 };
