@@ -51,7 +51,7 @@ const char pear[8] PROGMEM = {0x00, 0x04, 0x04, 0x0E, 0x0E, 0x1F, 0x1F, 0x0E};
 const char banana[8] PROGMEM = {0x02, 0x04, 0x0C, 0x0C, 0x18, 0x1C, 0x0E, 0x06};
 const char* const fruitsChars[8] PROGMEM = {two, dino, tree, head, cherry, apple, pear, banana};
 
-const char colorsChars[4] = {'R', 'G', 'B', 'Y'};
+const char morseChars[4] = {'0', '1', '2', '3'};
 const char simonColorsChars[4] = {'G', 'Y', 'R', 'B'};
 
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
@@ -421,7 +421,7 @@ class Morse {
                     break;
             }
             delay(2000);
-            byte sel = selector(const_cast<char*>(colorsChars));
+            byte sel = selector(const_cast<char*>(morseChars));
             sound.stop();
             if (sel == words[level]) {
                 level++;
@@ -442,7 +442,7 @@ class Morse {
         lcd.print(level);
     }
     byte level = 0;
-    const byte words[3] = {GREEN, YELLOW, RED};
+    const byte words[3] = {1, 3, 0};
     LiquidCrystal& lcd;
     rgb_t& rgb;
 };
