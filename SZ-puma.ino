@@ -1,3 +1,5 @@
+// TODO: progresivní delay při chybě, aby se omezil brite-force přístup
+
 #include <Adafruit_NeoPixel.h>
 #include <LiquidCrystal.h>
 
